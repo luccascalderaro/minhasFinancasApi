@@ -3,6 +3,7 @@ package com.educandoweb.course.service.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.educandoweb.course.exception.RegraNegocioException;
 import com.educandoweb.course.model.entity.Lancamento;
 import com.educandoweb.course.model.enums.StatusLancamento;
+import com.educandoweb.course.model.enums.TipoLancamento;
 import com.educandoweb.course.model.repository.LancamentoRepository;
 import com.educandoweb.course.service.LancamentoService;
 
@@ -39,7 +41,7 @@ public class LancamentoServiceImpl implements LancamentoService {
 		
 		Objects.requireNonNull(lancamento.getId());
 		validar(lancamento);
-		return repository.save(null);
+		return repository.save(lancamento);
 	}
 
 	@Override
@@ -98,6 +100,31 @@ public class LancamentoServiceImpl implements LancamentoService {
 		}
 		
 		
+	}
+
+	@Override
+	public Optional<Lancamento> obterPorId(Long id) {
+		// TODO Auto-generated method stub
+		return repository.findById(id);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public BigDecimal obterSaldoPorUsuario(Long id) {
+	BigDecimal receitas =	repository.obterSaldoPorTipoLancamentoEUsuario(id, TipoLancamento.RECEITA);
+	BigDecimal despesas =	repository.obterSaldoPorTipoLancamentoEUsuario(id, TipoLancamento.DESPESA);
+	
+	if(receitas == null) {
+		receitas = BigDecimal.ZERO;
+		
+	}
+	
+	if(despesas == null) {
+		despesas = BigDecimal.ZERO;
+	}
+	
+	
+	return receitas.subtract(despesas);
 	}
 
 }
